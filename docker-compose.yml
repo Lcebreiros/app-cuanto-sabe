@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: laravel-app
+    volumes:
+      - ./:/var/www/html
+      - /var/www/html/vendor          # Excluir vendor de la imagen
+      - /var/www/html/node_modules    # Excluir node_modules
+      - /var/www/html/public/build    # Excluir assets compilados
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      APP_ENV: local                  # ← LOCAL
+      APP_DEBUG: "true"               # ← DEBUG ON
+      APP_KEY: base64:3vuI/Jx//H2jNJ7VF2eRdcXCbATCx13C+E8+REDSxqw=
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: cuanto_sabe_db
+      DB_USERNAME: CuantoSabe
+      DB_PASSWORD: CuantoSabe2025!
+      LOG_CHANNEL: stack              # Logs en archivo
+      SESSION_DRIVER: file            # Sesiones en archivo (más fácil debug)
+      CACHE_DRIVER: file
+
+  db:
+    image: mariadb:10.11
+    container_name: laravel-db
+    ports:
+      - "3306:3306"                   # ← Exponer para conectar con DBeaver, etc
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: cuanto_sabe_db
+      MYSQL_USER: CuantoSabe
+      MYSQL_PASSWORD: CuantoSabe2025!
+    volumes:
+      - dbdata:/var/lib/mysql
+
+volumes:
+  dbdata:
