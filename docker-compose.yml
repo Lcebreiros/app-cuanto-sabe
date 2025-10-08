@@ -1,36 +1,39 @@
-version: "3.9"
-
 services:
   app:
     build: .
     container_name: laravel-app
+    restart: unless-stopped
     volumes:
       - ./:/var/www/html
-      - /var/www/html/vendor          # Excluir vendor de la imagen
-      - /var/www/html/node_modules    # Excluir node_modules
-      - /var/www/html/public/build    # Excluir assets compilados
+      - vendor_data:/var/www/html/vendor
+      - node_modules_data:/var/www/html/node_modules
     ports:
       - "8080:8080"
     depends_on:
       - db
     environment:
-      APP_ENV: local                  # ← LOCAL
-      APP_DEBUG: "true"               # ← DEBUG ON
+      APP_ENV: local
+      APP_DEBUG: "true"
       APP_KEY: base64:3vuI/Jx//H2jNJ7VF2eRdcXCbATCx13C+E8+REDSxqw=
+      APP_URL: http://localhost:8080
+      DB_CONNECTION: mysql
       DB_HOST: db
       DB_PORT: 3306
       DB_DATABASE: cuanto_sabe_db
       DB_USERNAME: CuantoSabe
       DB_PASSWORD: CuantoSabe2025!
-      LOG_CHANNEL: stack              # Logs en archivo
-      SESSION_DRIVER: file            # Sesiones en archivo (más fácil debug)
+      LOG_CHANNEL: stack
+      SESSION_DRIVER: file
       CACHE_DRIVER: file
+    command: php artisan serve --host=0.0.0.0 --port=8080
+
 
   db:
     image: mariadb:10.11
     container_name: laravel-db
+    restart: unless-stopped
     ports:
-      - "3306:3306"                   # ← Exponer para conectar con DBeaver, etc
+      - "3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: cuanto_sabe_db
@@ -38,6 +41,14 @@ services:
       MYSQL_PASSWORD: CuantoSabe2025!
     volumes:
       - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
 volumes:
   dbdata:
+  vendor_data:
+  node_modules_data:
