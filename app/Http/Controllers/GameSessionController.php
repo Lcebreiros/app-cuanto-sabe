@@ -585,7 +585,7 @@ public function participar(Request $request)
         : null;
 
     if (!$participant) {
-        session(['return_to_url' => url()->full()]);
+        session(['return_to_url' => request()->fullUrl()]);
         return redirect()->route('participants.form');
     }
 
