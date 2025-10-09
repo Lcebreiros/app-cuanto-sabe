@@ -63,11 +63,13 @@
             "@php artisan test"
         ]
     },
-    "extra": {
-        "laravel": {
-            "dont-discover": []
-        }
-    },
+"extra": {
+    "laravel": {
+        "dont-discover": [
+            "barryvdh/laravel-ide-helper"
+        ]
+    }
+},
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",

@@ -418,44 +418,99 @@
         </form>
     </div>
 
-    {{-- IMPORT CSV --}}
+    {{-- IMPORT CSV ACTUALIZADO --}}
     <div id="formCSV" class="toggle-form">
         <form action="{{ route('questions.import.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
+            
+            {{-- Fila 1: Archivo y Modo --}}
             <div class="form-row">
                 <div class="form-col">
-                    <label class="form-label">Importar preguntas desde CSV:</label>
+                    <label class="form-label">📄 Archivo CSV:</label>
                     <input type="file" name="csv" accept=".csv,text/csv" class="form-control" required>
-                    <small style="color: var(--text-secondary)">Delimitador: coma, punto y coma, tab o |. Codificación UTF-8.</small>
+                    <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">
+                        Delimitador: coma, punto y coma, tab o |. UTF-8.
+                    </small>
                 </div>
                 <div class="form-col">
-                    <label class="form-label">Modo:</label>
+                    <label class="form-label">Modo de importación:</label>
                     <select name="modo" class="form-select">
-                        <option value="insert">Solo insertar</option>
-                        <option value="upsert" selected>Crear/Actualizar</option>
+                        <option value="insert">Solo insertar nuevas</option>
+                        <option value="upsert" selected>Crear/Actualizar existentes</option>
                     </select>
+                </div>
+            </div>
+
+            {{-- Fila 2: Selector de Motivo (NUEVO) --}}
+            <div class="form-row" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; margin-top: 1rem;">
+                <div class="form-col">
+                    <label class="form-label">
+                        🎯 <strong>Opción 1:</strong> Forzar todas las preguntas a un motivo específico
+                    </label>
+                    <select name="motivo_forzado_id" id="motivoForzado" class="form-select" onchange="toggleMotivoOptions()">
+                        <option value="">-- No forzar, usar motivo del CSV --</option>
+                        @foreach(($motivos ?? collect()) as $motivo)
+                            <option value="{{ $motivo->id }}">{{ $motivo->nombre }}</option>
+                        @endforeach
+                    </select>
+                    <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">
+                        Si seleccionás un motivo aquí, <strong>se ignorará</strong> la columna "motivo" del CSV
+                    </small>
+                </div>
+            </div>
+
+            {{-- Fila 3: Opciones de creación automática --}}
+            <div class="form-row" id="autoCreateOptions">
+                <div class="form-col">
+                    <label class="form-label" style="display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" name="crear_motivos" id="crearMotivos" value="1" checked style="margin: 0;">
+                        <strong>Opción 2:</strong> Crear motivos automáticamente si vienen en el CSV
+                    </label>
+                    <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem; margin-left: 1.5rem;">
+                        Permite importar múltiples motivos en un solo CSV
+                    </small>
                 </div>
                 <div class="form-col">
                     <label class="form-label" style="display: flex; align-items: center; gap: 0.5rem;">
-                        <input type="checkbox" name="crear_categorias" value="1" style="margin: 0;">
-                        Crear categorías
+                        <input type="checkbox" name="crear_categorias" value="1" checked style="margin: 0;">
+                        Crear categorías automáticamente
                     </label>
                 </div>
             </div>
             
+            {{-- Botón de importar --}}
             <div class="form-row">
                 <div class="form-col">
-                    <button type="submit" class="submit-btn" style="background: #4a6bff;">Importar</button>
+                    <button type="submit" class="submit-btn" style="background: #4a6bff; width: 100%;">
+                        📥 Importar CSV
+                    </button>
                 </div>
             </div>
             
-            <details>
-                <summary class="csv-toggle">Ver formato CSV</summary>
-                <div class="csv-preview">
-categoria,texto,a,b,c,d,correcta
-Ciencia,¿Cuál es el planeta más grande?,Júpiter,Saturno,Neptuno,Urano,A
-Historia,¿En qué año fue 1810?,1810,1816,1806,1853,A
-Deportes,¿Cuántos jugadores tiene un equipo de fútbol?,9,10,11,12,C
+            {{-- Información sobre formato CSV --}}
+            <details style="margin-top: 1rem;">
+                <summary class="csv-toggle" style="cursor: pointer; color: var(--accent); font-weight: 500;">
+                    📋 Ver formatos de CSV aceptados
+                </summary>
+                <div class="csv-preview" style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; margin-top: 0.5rem;">
+                    <p style="margin-bottom: 0.5rem;"><strong>Formato 1: Con columna "motivo" (múltiples motivos)</strong></p>
+                    <pre style="background: rgba(0,0,0,0.5); padding: 0.75rem; border-radius: 4px; overflow-x: auto; font-size: 0.85rem;">motivo,categoria,pregunta,a,b,c,d,correcta
+Anime,Dragon Ball,¿Quién es Goku?,Saiyajin,Humano,Namekiano,Android,A
+Videojuegos,Mario Bros,¿Quién es Mario?,Fontanero,Chef,Carpintero,Pintor,A
+Deportes,Fútbol,¿Cuántos jugadores por equipo?,11,10,12,9,A</pre>
+
+                    <p style="margin: 1rem 0 0.5rem;"><strong>Formato 2: Sin columna "motivo" (usar selector)</strong></p>
+                    <pre style="background: rgba(0,0,0,0.5); padding: 0.75rem; border-radius: 4px; overflow-x: auto; font-size: 0.85rem;">categoria,pregunta,a,b,c,d,correcta
+Dragon Ball,¿Quién es Goku?,Saiyajin,Humano,Namekiano,Android,A
+Naruto,¿Quién es Naruto?,Ninja,Samurai,Pirata,Caballero,A</pre>
+
+                    <p style="margin: 1rem 0 0.5rem;"><strong>Columnas aceptadas (alias):</strong></p>
+                    <ul style="list-style: disc; margin-left: 1.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+                        <li><code>motivo</code>: motivo, motivo_nombre, reason, tema</li>
+                        <li><code>categoria</code>: categoria, category, cat, categoria_nombre</li>
+                        <li><code>pregunta</code>: pregunta, texto, enunciado, question</li>
+                        <li><code>correcta</code>: correcta, respuesta, opcion_correcta, correct, answer (acepta: A/B/C/D, 1-4, o texto exacto)</li>
+                    </ul>
                 </div>
             </details>
         </form>
@@ -464,25 +519,32 @@ Deportes,¿Cuántos jugadores tiene un equipo de fútbol?,9,10,11,12,C
     <!-- Listados -->
     <div class="categories-section">
         <div class="category-card">
-            <h3 class="category-title">Motivos existentes</h3>
+            <h3 class="category-title">Motivos existentes ({{ ($motivos ?? collect())->count() }})</h3>
             <ul class="category-list">
-                @foreach(($motivos ?? collect()) as $m)
+                @forelse(($motivos ?? collect()) as $m)
                     <li class="category-item">
                         <span class="category-name">{{ $m->nombre }}</span>
+                        <span class="category-motive" style="font-size: 0.85rem; opacity: 0.7;">
+                            {{ $m->categorias->count() }} categorías
+                        </span>
                     </li>
-                @endforeach
+                @empty
+                    <li style="opacity: 0.5; font-style: italic;">No hay motivos creados</li>
+                @endforelse
             </ul>
         </div>
         
         <div class="category-card">
-            <h3 class="category-title">Categorías existentes</h3>
+            <h3 class="category-title">Categorías existentes ({{ ($categorias ?? collect())->count() }})</h3>
             <ul class="category-list">
-                @foreach(($categorias ?? collect()) as $c)
+                @forelse(($categorias ?? collect()) as $c)
                     <li class="category-item">
                         <span class="category-name">{{ $c->nombre }}</span>
                         <span class="category-motive">{{ $c->motivo->nombre ?? '—' }}</span>
                     </li>
-                @endforeach
+                @empty
+                    <li style="opacity: 0.5; font-style: italic;">No hay categorías creadas</li>
+                @endforelse
             </ul>
         </div>
     </div>
@@ -496,5 +558,26 @@ Deportes,¿Cuántos jugadores tiene un equipo de fútbol?,9,10,11,12,C
         const el = document.getElementById(id);
         if (el) el.classList.toggle('show');
     }
+
+    // Mostrar/ocultar opciones según si hay motivo forzado
+    function toggleMotivoOptions() {
+        const motivoForzado = document.getElementById('motivoForzado');
+        const autoCreateOptions = document.getElementById('autoCreateOptions');
+        const crearMotivosCheckbox = document.getElementById('crearMotivos');
+        
+        if (motivoForzado.value) {
+            // Si hay motivo forzado, deshabilitar creación de motivos
+            crearMotivosCheckbox.checked = false;
+            crearMotivosCheckbox.disabled = true;
+            autoCreateOptions.style.opacity = '0.5';
+        } else {
+            // Si no hay motivo forzado, habilitar creación de motivos
+            crearMotivosCheckbox.disabled = false;
+            crearMotivosCheckbox.checked = true;
+            autoCreateOptions.style.opacity = '1';
+        }
+    }
+    
+    // Inicializar al cargar
+    document.addEventListener('DOMContentLoaded', toggleMotivoOptions);
 </script>
-@endsection

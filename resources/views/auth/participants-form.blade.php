@@ -131,7 +131,7 @@
         <form id="registration-form" action="{{ route('participants.add') }}" method="POST" autocomplete="off">
             @csrf
             <input type="text" name="participants[0][username]" class="neon-input" placeholder="Nombre o Apodo" required>
-            <input type="text" name="participants[0][dni_last4]" class="neon-input" placeholder="Últimos 4 del DNI" maxlength="4" required pattern="\d{4}">
+            <input type="text" name="participants[0][dni_last4]" class="neon-input" placeholder="Elige un pin identificador" maxlength="4" required pattern="\d{4}">
             <button type="submit" class="neon-btn">Registrarme</button>
         </form>
     </div>

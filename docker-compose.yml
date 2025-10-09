@@ -25,8 +25,10 @@ services:
       LOG_CHANNEL: stack
       SESSION_DRIVER: file
       CACHE_DRIVER: file
+      PUSHER_HOST: ""
+      PUSHER_PORT: 443
+      PUSHER_SCHEME: https
     command: php artisan serve --host=0.0.0.0 --port=8080
-
 
   db:
     image: mariadb:10.11
