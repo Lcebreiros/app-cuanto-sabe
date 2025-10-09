@@ -2,14 +2,12 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -19,8 +17,8 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'email',
-        'password',
+        'dni_ultimo4',
+        'role',
     ];
 
     /**
@@ -29,12 +27,12 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $hidden = [
-        'password',
+        'dni_ultimo4', // ocultamos para que no se vea el hash
         'remember_token',
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * The attributes that should be cast.
      *
      * @return array<string, string>
      */
@@ -42,7 +40,30 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
         ];
     }
+
+    /**
+     * Override the method Laravel uses to get the password for authentication.
+     *
+     * @return string
+     */
+    public function getAuthPassword()
+    {
+        return $this->dni_ultimo4;
+    }
+
+    // En app/Models/User.php
+
+public function participantSessions()
+{
+    return $this->hasMany(ParticipantSession::class);
+}
+
+// Para obtener la sesión activa (puedes ajustar la lógica del "status")
+public function participantSessionActual()
+{
+    return $this->participantSessions()->where('status', 'activo')->latest()->first();
+}
+
 }
