@@ -18,16 +18,6 @@
                 <span class="btn-text">Chat</span>
                 <span class="btn-hover-effect"></span>
             </a>
-
-                        <a href="{{ route('admin.team') }}" class="panel-btn">
-                <span class="btn-text">Equipo</span>
-                <span class="btn-hover-effect"></span>
-            </a>
-
-                        <a href="{{ route('admin.rules') }}" class="panel-btn">
-                <span class="btn-text">Reglas</span>
-                <span class="btn-hover-effect"></span>
-            </a>
             
             @auth
                 @if (auth()->user()->role === 'admin')
