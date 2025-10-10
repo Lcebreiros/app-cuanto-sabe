@@ -83,6 +83,28 @@ class QuestionImportController extends Controller
 
         $idx = $this->indexHeaders($headers, $map);
 
+        // DEBUG TEMPORAL: Ver qué se detectó
+        \Log::info('=== DEBUG CSV IMPORT ===');
+        \Log::info('Delimitador detectado: ' . json_encode($delimiter));
+        \Log::info('Headers originales (primeras 3 filas):', [
+            'first_line' => $firstLine,
+        ]);
+        \Log::info('Headers normalizados:', $headers);
+        \Log::info('Índices mapeados:', $idx);
+        
+        // Leer y mostrar las primeras 3 filas de datos
+        $debugRows = [];
+        for ($i = 0; $i < 3; $i++) {
+            $testRow = fgetcsv($handle, 0, $delimiter);
+            if ($testRow) {
+                $debugRows[] = $testRow;
+            }
+        }
+        \Log::info('Primeras 3 filas de datos:', $debugRows);
+        rewind($handle);
+        fgetcsv($handle, 0, $delimiter); // Saltar header de nuevo
+        // FIN DEBUG
+
         // Validaciones mínimas
         $minCols = ['texto','category'];
         foreach ($minCols as $col) {
