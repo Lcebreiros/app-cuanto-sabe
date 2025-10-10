@@ -295,20 +295,21 @@ class QuestionImportController extends Controller
      */
     private function sanitizeText(?string $text): ?string
     {
-        if (!$text || trim($text) === '') {
+        if ($text === null || $text === '') {
             return $text;
         }
         
-        // Remover BOM y caracteres de control invisibles
-        $text = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $text);
+        // Solo remover caracteres de control realmente problemáticos (NULL, etc)
+        // NO remover tabs ni newlines normales que podrían estar en el contenido
+        $text = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', $text);
         
-        // Remover espacios no-break y caracteres Unicode problemáticos
-        $text = str_replace(["\xC2\xA0", "\xE2\x80\x8B"], ' ', $text);
+        // Remover espacios no-break Unicode y zero-width spaces
+        $text = str_replace(["\xC2\xA0", "\xE2\x80\x8B", "\xE2\x80\x8C", "\xE2\x80\x8D"], ' ', $text);
         
-        // Normalizar espacios múltiples
+        // Normalizar múltiples espacios/tabs/newlines a un solo espacio
         $text = preg_replace('/\s+/', ' ', $text);
         
-        // Asegurar UTF-8 válido
+        // Asegurar UTF-8 válido solo si realmente hay un problema
         if (!mb_check_encoding($text, 'UTF-8')) {
             $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
         }
