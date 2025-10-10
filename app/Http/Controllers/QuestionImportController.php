@@ -83,16 +83,7 @@ class QuestionImportController extends Controller
 
         $idx = $this->indexHeaders($headers, $map);
 
-        // DEBUG TEMPORAL: Ver qué se detectó
-        \Log::info('=== DEBUG CSV IMPORT ===');
-        \Log::info('Delimitador detectado: ' . json_encode($delimiter));
-        \Log::info('Headers originales (primeras 3 filas):', [
-            'first_line' => $firstLine,
-        ]);
-        \Log::info('Headers normalizados:', $headers);
-        \Log::info('Índices mapeados:', $idx);
-        
-        // Leer y mostrar las primeras 3 filas de datos
+        // DEBUG TEMPORAL: Ver qué se detectó (mostrar en pantalla)
         $debugRows = [];
         for ($i = 0; $i < 3; $i++) {
             $testRow = fgetcsv($handle, 0, $delimiter);
@@ -100,10 +91,17 @@ class QuestionImportController extends Controller
                 $debugRows[] = $testRow;
             }
         }
-        \Log::info('Primeras 3 filas de datos:', $debugRows);
-        rewind($handle);
-        fgetcsv($handle, 0, $delimiter); // Saltar header de nuevo
-        // FIN DEBUG
+        
+        dd([
+            'delimitador' => $delimiter,
+            'primera_linea_raw' => $firstLine,
+            'headers_normalizados' => $headers,
+            'indices_mapeados' => $idx,
+            'primeras_3_filas' => $debugRows,
+            'que_deberia_ser_texto' => isset($idx['texto']) ? 'Columna ' . $idx['texto'] : 'NO MAPEADO',
+        ]);
+        
+        // FIN DEBUG - QUITAR DESPUÉS
 
         // Validaciones mínimas
         $minCols = ['texto','category'];
