@@ -23,18 +23,35 @@ class QuestionImportController extends Controller
             'csv' => ['required','file','mimes:csv,txt','max:10240'],
             'crear_categorias' => ['nullable','boolean'],
             'crear_motivos' => ['nullable','boolean'],
-            'motivo_forzado_id' => ['nullable','exists:motivos,id'], // NUEVO: forzar un motivo desde el front
+            'motivo_forzado_id' => ['nullable','exists:motivos,id'],
             'modo' => ['required','in:insert,upsert'],
         ]);
 
         $crearCategorias = (bool)$request->boolean('crear_categorias');
         $crearMotivos = (bool)$request->boolean('crear_motivos');
-        $motivoForzadoId = $request->input('motivo_forzado_id'); // Si está, ignora columna motivo del CSV
+        $motivoForzadoId = $request->input('motivo_forzado_id');
         $modo = $request->input('modo', 'insert');
 
-        // Abrir archivo
+        // Leer el archivo con manejo UTF-8
         $path = $request->file('csv')->getRealPath();
-        $handle = fopen($path, 'r');
+        $content = file_get_contents($path);
+        
+        // Remover BOM si existe
+        $content = str_replace("\xEF\xBB\xBF", '', $content);
+        
+        // Detectar y convertir encoding si es necesario
+        if (!mb_check_encoding($content, 'UTF-8')) {
+            $detected = mb_detect_encoding($content, ['UTF-8', 'ISO-8859-1', 'Windows-1252'], true);
+            if ($detected) {
+                $content = mb_convert_encoding($content, 'UTF-8', $detected);
+            }
+        }
+        
+        // Crear un recurso temporal en memoria con el contenido UTF-8
+        $handle = fopen('php://temp', 'r+');
+        fwrite($handle, $content);
+        rewind($handle);
+        
         if (!$handle) {
             return back()->withErrors(['csv' => 'No se pudo abrir el archivo.']);
         }
@@ -45,6 +62,7 @@ class QuestionImportController extends Controller
 
         $headers = fgetcsv($handle, 0, $delimiter);
         if (!$headers) {
+            fclose($handle);
             return back()->withErrors(['csv' => 'El CSV está vacío o no tiene cabecera.']);
         }
 
@@ -69,6 +87,7 @@ class QuestionImportController extends Controller
         $minCols = ['texto','category'];
         foreach ($minCols as $col) {
             if (!isset($idx[$col])) {
+                fclose($handle);
                 return back()->withErrors([
                     'csv' => "Falta la columna requerida '{$col}' (alias: ".implode(', ', $map[$col]).")."
                 ]);
@@ -76,11 +95,13 @@ class QuestionImportController extends Controller
         }
 
         if (!isset($idx['a']) || !isset($idx['b'])) {
+            fclose($handle);
             return back()->withErrors(['csv' => 'Faltan columnas para opciones mínimas (A y B).']);
         }
 
         // Si no hay motivo forzado y tampoco columna motivo en CSV, error
         if (!$motivoForzadoId && !isset($idx['motivo']) && !isset($idx['motivo_id'])) {
+            fclose($handle);
             return back()->withErrors([
                 'csv' => 'Debes seleccionar un motivo en el formulario O incluir la columna "motivo" en el CSV.'
             ]);
@@ -92,7 +113,7 @@ class QuestionImportController extends Controller
         $motivoCacheById = Motivo::all(['id'])->keyBy('id');
 
         $catCacheByName = Categoria::all(['id','nombre','motivo_id'])
-            ->keyBy(fn($c) => Str::lower(trim($c->nombre)).'-'.$c->motivo_id); // key único: nombre+motivo
+            ->keyBy(fn($c) => Str::lower(trim($c->nombre)).'-'.$c->motivo_id);
 
         $catCacheById = Categoria::all(['id'])->keyBy('id');
 
@@ -113,7 +134,9 @@ class QuestionImportController extends Controller
                 }
 
                 $val = function($key) use ($idx, $row) {
-                    return isset($idx[$key]) && isset($row[$idx[$key]]) ? trim((string)$row[$idx[$key]]) : null;
+                    $value = isset($idx[$key]) && isset($row[$idx[$key]]) ? trim((string)$row[$idx[$key]]) : null;
+                    // Sanitizar para prevenir problemas de encoding
+                    return $this->sanitizeText($value);
                 };
 
                 $texto         = $val('texto');
@@ -264,6 +287,33 @@ class QuestionImportController extends Controller
             report($e);
             return back()->withErrors(['csv' => 'Error: '.$e->getMessage()]);
         }
+    }
+
+    /**
+     * Sanitiza y normaliza texto para prevenir problemas de encoding
+     * Actúa como safety net en caso de que la configuración UTF-8 falle
+     */
+    private function sanitizeText(?string $text): ?string
+    {
+        if (!$text || trim($text) === '') {
+            return $text;
+        }
+        
+        // Remover BOM y caracteres de control invisibles
+        $text = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $text);
+        
+        // Remover espacios no-break y caracteres Unicode problemáticos
+        $text = str_replace(["\xC2\xA0", "\xE2\x80\x8B"], ' ', $text);
+        
+        // Normalizar espacios múltiples
+        $text = preg_replace('/\s+/', ' ', $text);
+        
+        // Asegurar UTF-8 válido
+        if (!mb_check_encoding($text, 'UTF-8')) {
+            $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
+        }
+        
+        return trim($text);
     }
 
     private function guessDelimiter(string $line): string
