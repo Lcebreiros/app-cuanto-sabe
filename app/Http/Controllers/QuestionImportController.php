@@ -60,7 +60,10 @@ class QuestionImportController extends Controller
         $delimiter = $this->guessDelimiter($firstLine);
         rewind($handle);
 
-        $headers = fgetcsv($handle, 0, $delimiter);
+        // Configurar locale para el parser CSV
+        setlocale(LC_ALL, 'en_US.UTF-8');
+
+        $headers = fgetcsv($handle, 0, $delimiter, '"', '\\');
         if (!$headers) {
             fclose($handle);
             return back()->withErrors(['csv' => 'El CSV está vacío o no tiene cabecera.']);
@@ -82,26 +85,6 @@ class QuestionImportController extends Controller
         ];
 
         $idx = $this->indexHeaders($headers, $map);
-
-        // DEBUG TEMPORAL: Ver qué se detectó (mostrar en pantalla)
-        $debugRows = [];
-        for ($i = 0; $i < 3; $i++) {
-            $testRow = fgetcsv($handle, 0, $delimiter);
-            if ($testRow) {
-                $debugRows[] = $testRow;
-            }
-        }
-        
-        dd([
-            'delimitador' => $delimiter,
-            'primera_linea_raw' => $firstLine,
-            'headers_normalizados' => $headers,
-            'indices_mapeados' => $idx,
-            'primeras_3_filas' => $debugRows,
-            'que_deberia_ser_texto' => isset($idx['texto']) ? 'Columna ' . $idx['texto'] : 'NO MAPEADO',
-        ]);
-        
-        // FIN DEBUG - QUITAR DESPUÉS
 
         // Validaciones mínimas
         $minCols = ['texto','category'];
@@ -146,7 +129,7 @@ class QuestionImportController extends Controller
         DB::beginTransaction();
         try {
             $rowNum = 1;
-            while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
+            while (($row = fgetcsv($handle, 0, $delimiter, '"', '\\')) !== false) {
                 $rowNum++;
 
                 if ($this->rowIsEmpty($row)) {
