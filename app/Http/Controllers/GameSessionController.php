@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\GameSession;
-use Illuminate\Support\Facades\Session;
 use App\Models\Question;
 use App\Events\NuevaPreguntaOverlay;
 use App\Events\OpcionSeleccionada;
@@ -48,7 +47,7 @@ class GameSessionController extends Controller
         'descarte_usados' => 0,
     ]);
 
-    Cache::forget('game_session_active');
+    \Cache::forget('game_session_active');
 
     $modoTexto = $session->isExpress() ? 'Express (10 pts)' : 'Normal (25 pts)';
     return redirect()->back()->with('success', "¡Juego iniciado para {$session->guest_name} en modo {$modoTexto}!");
@@ -98,19 +97,19 @@ public function revealAnswer(Request $request)
 {
     try {
         $data = session('last_overlay_question', null);
-        Log::info('🔴 REVEAL: Sesión PHP', ['data' => $data]);
+        \Log::info('🔴 REVEAL: Sesión PHP', ['data' => $data]);
         
         if (!$data) {
             $session = $this->getActiveSessionCached(5);
             if ($session && $session->pregunta_json) {
                 $data = json_decode($session->pregunta_json, true);
-                Log::info('🟡 REVEAL: Recuperado de BD', ['data' => $data]);
+                \Log::info('🟡 REVEAL: Recuperado de BD', ['data' => $data]);
                 session(['last_overlay_question' => $data]);
             }
         }
         
         if (!$data) {
-            Log::warning('🔴 REVEAL: No hay pregunta activa');
+            \Log::warning('🔴 REVEAL: No hay pregunta activa');
             return response()->json(['error' => 'No hay pregunta activa en sesión'], 400);
         }
 
@@ -160,7 +159,7 @@ public function revealAnswer(Request $request)
             \App\Models\ParticipantSession::where('id', $participantId)
                 ->update(['puntaje' => $puntajeTotal]);
             
-            Log::info('💾 Puntaje guardado en BD', [
+            \Log::info('💾 Puntaje guardado en BD', [
                 'participant_id' => $participantId,
                 'puntaje' => $puntajeTotal
             ]);
@@ -168,7 +167,7 @@ public function revealAnswer(Request $request)
 
         // ✅ DISPARAR EVENTO INDIVIDUAL PARA CADA PARTICIPANTE
         foreach ($puntajes as $participantId => $puntajeTotal) {
-            Log::info('📤 Enviando PuntajeActualizado', [
+            \Log::info('📤 Enviando PuntajeActualizado', [
                 'participant_id' => $participantId,
                 'puntaje' => $puntajeTotal,
                 'canal' => 'puntaje.' . $participantId
@@ -198,14 +197,14 @@ public function revealAnswer(Request $request)
             'golden' => ($data['special_indicator'] ?? null) === 'PREGUNTA DE ORO',
         ]));
 
-        Log::info('✅ REVEAL: Completado exitosamente', [
+        \Log::info('✅ REVEAL: Completado exitosamente', [
             'participantes_notificados' => count($puntajes)
         ]);
         
         return response()->json(['success' => true]);
         
     } catch (\Throwable $e) {
-        Log::error('❌ Error en revealAnswer: '.$e->getMessage(), [
+        \Log::error('❌ Error en revealAnswer: '.$e->getMessage(), [
             'exception' => $e,
             'trace' => $e->getTraceAsString()
         ]);
@@ -501,7 +500,7 @@ public function lanzarPreguntaCategoria(Request $request)
     
     // Si no hay más preguntas (solo había 1 y era la anterior), permitir repetirla
     if (!$pregunta) {
-        Log::warning('⚠️ No hay más preguntas disponibles, permitiendo repetir');
+        \Log::warning('⚠️ No hay más preguntas disponibles, permitiendo repetir');
         $pregunta = Question::where('category_id', $categoriaModel->id)->inRandomOrder()->first();
     }
     
@@ -552,7 +551,7 @@ public function lanzarPreguntaCategoria(Request $request)
     
     session(['last_overlay_question' => $data]);
     
-    Log::info('🟢 PREGUNTA GUARDADA', [
+    \Log::info('🟢 PREGUNTA GUARDADA', [
         'pregunta_id' => $pregunta->id, 
         'label_correcto' => $label_correcto,
         'anterior_id' => $preguntaAnteriorId,
@@ -585,7 +584,7 @@ public function participar(Request $request)
         : null;
 
     if (!$participant) {
-        session(['return_to_url' => request()->fullUrl()]);
+        session(['return_to_url' => url()->full()]);
         return redirect()->route('participants.form');
     }
 
@@ -674,7 +673,7 @@ public function enviarParticipacion(Request $request)
     }
 
     // 5. Log para depuración
-    Log::info("GUARDAR RESPUESTA: qid={$request->question_id}, label_correcto={$labelCorrecto}, seleccionada={$request->option_label}");
+    \Log::info("GUARDAR RESPUESTA: qid={$request->question_id}, label_correcto={$labelCorrecto}, seleccionada={$request->option_label}");
 
     // 6. Guardar la respuesta
     ParticipantAnswer::updateOrCreate(
@@ -783,7 +782,7 @@ public function salirDelJuego(Request $request)
 
     // 2. Borrar la sesión y la cookie
     session()->forget('participant_session_id');
-    Cookie::queue(Cookie::forget('participant_session_id'));
+    \Cookie::queue(\Cookie::forget('participant_session_id'));
 
     // 3. Si existe, eliminar el registro del participante (y opcional: sus respuestas)
     if ($participantSessionId) {
