@@ -520,32 +520,64 @@ Naruto,¿Quién es Naruto?,Ninja,Samurai,Pirata,Caballero,A</pre>
     <div class="categories-section">
         <div class="category-card">
             <h3 class="category-title">Motivos existentes ({{ ($motivos ?? collect())->count() }})</h3>
-            <ul class="category-list">
-                @forelse(($motivos ?? collect()) as $m)
-                    <li class="category-item">
-                        <span class="category-name">{{ $m->nombre }}</span>
-                        <span class="category-motive" style="font-size: 0.85rem; opacity: 0.7;">
-                            {{ $m->categorias->count() }} categorías
-                        </span>
-                    </li>
-                @empty
-                    <li style="opacity: 0.5; font-style: italic;">No hay motivos creados</li>
-                @endforelse
-            </ul>
+            <form action="{{ route('motivo.bulkDelete') }}" method="POST">
+                @csrf
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; margin-bottom:0.75rem;">
+                    <label style="display:flex; align-items:center; gap:0.5rem; color: var(--text-secondary); font-size:0.9rem;">
+                        <input type="checkbox" id="selectAllMotivos" onclick="toggleSelectAll('motivos')">
+                        Seleccionar todo
+                    </label>
+                    <button type="submit" class="action-btn" style="padding:0.5rem 0.9rem; background: rgba(120, 20, 20, 0.6); border-color: rgba(180, 60, 60, 0.9);"
+                        onclick="return confirm('¿Eliminar los motivos seleccionados? Se eliminarán también sus categorías y sesiones relacionadas.');">
+                        🗑️ Eliminar seleccionados
+                    </button>
+                </div>
+                <ul class="category-list">
+                    @forelse(($motivos ?? collect()) as $m)
+                        <li class="category-item">
+                            <span style="display:flex; align-items:center; gap:0.5rem;">
+                                <input type="checkbox" class="chk-motivo" name="ids[]" value="{{ $m->id }}" data-group="motivos">
+                                <span class="category-name">{{ $m->nombre }}</span>
+                            </span>
+                            <span class="category-motive" style="font-size: 0.85rem; opacity: 0.7;">
+                                {{ $m->categorias->count() }} categorías
+                            </span>
+                        </li>
+                    @empty
+                        <li style="opacity: 0.5; font-style: italic;">No hay motivos creados</li>
+                    @endforelse
+                </ul>
+            </form>
         </div>
         
         <div class="category-card">
             <h3 class="category-title">Categorías existentes ({{ ($categorias ?? collect())->count() }})</h3>
-            <ul class="category-list">
-                @forelse(($categorias ?? collect()) as $c)
-                    <li class="category-item">
-                        <span class="category-name">{{ $c->nombre }}</span>
-                        <span class="category-motive">{{ $c->motivo->nombre ?? '—' }}</span>
-                    </li>
-                @empty
-                    <li style="opacity: 0.5; font-style: italic;">No hay categorías creadas</li>
-                @endforelse
-            </ul>
+            <form action="{{ route('categoria.bulkDelete') }}" method="POST">
+                @csrf
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; margin-bottom:0.75rem;">
+                    <label style="display:flex; align-items:center; gap:0.5rem; color: var(--text-secondary); font-size:0.9rem;">
+                        <input type="checkbox" id="selectAllCategorias" onclick="toggleSelectAll('categorias')">
+                        Seleccionar todo
+                    </label>
+                    <button type="submit" class="action-btn" style="padding:0.5rem 0.9rem; background: rgba(120, 20, 20, 0.6); border-color: rgba(180, 60, 60, 0.9);"
+                        onclick="return confirm('¿Eliminar las categorías seleccionadas? Las preguntas quedarán sin categoría.');">
+                        🗑️ Eliminar seleccionadas
+                    </button>
+                </div>
+                <ul class="category-list">
+                    @forelse(($categorias ?? collect()) as $c)
+                        <li class="category-item">
+                            <span style="display:flex; align-items:center; gap:0.5rem;">
+                                <input type="checkbox" class="chk-categoria" name="ids[]" value="{{ $c->id }}" data-group="categorias">
+                                <span class="category-name">{{ $c->nombre }}</span>
+                            </span>
+                            <span class="category-motive">{{ $c->motivo->nombre ?? '—' }}</span>
+                        </li>
+                    @empty
+                        <li style="opacity: 0.5; font-style: italic;">No hay categorías creadas</li>
+                    @endforelse
+                </ul>
+            </form>
         </div>
     </div>
 </div>
@@ -580,4 +612,24 @@ Naruto,¿Quién es Naruto?,Ninja,Samurai,Pirata,Caballero,A</pre>
     
     // Inicializar al cargar
     document.addEventListener('DOMContentLoaded', toggleMotivoOptions);
+
+    // Select-all y sincronización de checkboxes
+    function toggleSelectAll(group) {
+        const master = group === 'motivos' ? document.getElementById('selectAllMotivos') : document.getElementById('selectAllCategorias');
+        const checkboxes = document.querySelectorAll(`input[type="checkbox"][data-group="${group}"]`);
+        checkboxes.forEach(chk => chk.checked = !!master.checked);
+    }
+
+    // Mantener estado del "seleccionar todo" cuando se tocan individuales
+    ['motivos','categorias'].forEach(group => {
+        document.addEventListener('change', (e) => {
+            const target = e.target;
+            if (target.matches(`input[type="checkbox"][data-group="${group}"]`)) {
+                const all = Array.from(document.querySelectorAll(`input[type="checkbox"][data-group="${group}"]`));
+                const allChecked = all.length > 0 && all.every(chk => chk.checked);
+                const master = group === 'motivos' ? document.getElementById('selectAllMotivos') : document.getElementById('selectAllCategorias');
+                if (master) master.checked = allChecked;
+            }
+        });
+    });
 </script>

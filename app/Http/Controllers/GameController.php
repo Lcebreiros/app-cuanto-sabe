@@ -58,6 +58,45 @@ class GameController extends Controller
         return back()->with('success', 'Categoría creada correctamente.');
     }
 
+    public function bulkDeleteMotivos(Request $request)
+    {
+        $data = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:motivos,id',
+        ]);
+
+        $ids = $data['ids'];
+
+        // Eliminar motivos seleccionados (FKs en categorias y game_sessions están en cascade)
+        $deleted = Motivo::whereIn('id', $ids)->delete();
+
+        // Limpiar cachés relacionados
+        Cache::forget('motivos_with_categorias');
+        Cache::forget('all_motivos');
+        Cache::forget('all_categorias');
+
+        return back()->with('status', "Motivos eliminados: {$deleted}");
+    }
+
+    public function bulkDeleteCategorias(Request $request)
+    {
+        $data = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:categorias,id',
+        ]);
+
+        $ids = $data['ids'];
+
+        // Eliminar categorías seleccionadas (questions.category_id está en SET NULL)
+        $deleted = Categoria::whereIn('id', $ids)->delete();
+
+        // Limpiar cachés relacionados
+        Cache::forget('motivos_with_categorias');
+        Cache::forget('all_categorias');
+
+        return back()->with('status', "Categorías eliminadas: {$deleted}");
+    }
+
     public function storePregunta(Request $request)
     {
         $request->validate([

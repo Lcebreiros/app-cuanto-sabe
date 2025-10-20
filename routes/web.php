@@ -49,6 +49,8 @@ Route::get('/juego', [GameController::class, 'controlPanel'])
 Route::post('/motivo', [GameController::class, 'storeMotivo'])->name('motivo.store');
 Route::post('/categoria', [GameController::class, 'storeCategoria'])->name('categoria.store');
 Route::post('/pregunta', [GameController::class, 'storePregunta'])->name('pregunta.store');
+Route::post('/motivos/bulk-delete', [GameController::class, 'bulkDeleteMotivos'])->name('motivo.bulkDelete');
+Route::post('/categorias/bulk-delete', [GameController::class, 'bulkDeleteCategorias'])->name('categoria.bulkDelete');
 
 // Sesiones de juego (crear/finalizar)
 Route::post('/game-session/start', [GameSessionController::class, 'start'])->name('game-session.start');
