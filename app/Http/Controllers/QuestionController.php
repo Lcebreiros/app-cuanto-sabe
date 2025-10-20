@@ -13,7 +13,7 @@ class QuestionController extends Controller
     {
         $motivos     = Motivo::orderBy('nombre')->get();
         $categorias  = Categoria::with('motivo')->orderBy('nombre')->get();
-        $questions   = Question::with(['categoria.motivo'])->orderByDesc('id')->get();
+        $questions   = Question::with(['categoria.motivo'])->orderByDesc('id')->paginate(100);
 
         return view('questions', compact('motivos', 'categorias', 'questions'));
     }

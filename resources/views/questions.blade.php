@@ -232,6 +232,25 @@
         font-size: 0.85rem;
     }
 
+    /* --- QUESTIONS LIST --- */
+    .questions-card {
+        margin-top: 2rem;
+    }
+    .categories-section .questions-in-grid { display: none; }
+    .question-item { padding: 0.75rem 0; border-bottom: 1px dashed rgba(255,255,255,0.1); }
+    .question-item:last-child { border-bottom: none; }
+    .question-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+    .question-text { color: var(--text-primary); font-weight: 600; }
+    .question-meta { color: var(--text-secondary); font-size: 0.85rem; }
+    .question-options { display:flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; margin-left: 2rem; }
+    .option-chip { padding: 0.25rem 0.5rem; border: 1px solid rgba(37,45,67,0.8); border-radius: 6px; color: var(--text-secondary); background: rgba(23,28,51,0.6); font-size: 0.85rem; }
+    .option-chip.correct { border-color: #1f6f4c; color: var(--success-color); box-shadow: 0 0 6px rgba(25,255,140,0.25) inset; }
+    .questions-toolbar { display:flex; align-items:center; justify-content:space-between; gap:0.75rem; margin-bottom:0.75rem; }
+    .pager { display:flex; align-items:center; gap: 0.5rem; }
+    .pager-btn { background: rgba(14,23,56,0.7); color:#fff; border:1px solid rgba(38,43,57,0.8); border-radius:8px; padding:0.4rem 0.6rem; display:inline-flex; align-items:center; gap:0.3rem; }
+    .pager-btn[disabled] { opacity:0.4; cursor:not-allowed; }
+    .icon-arrow { width: 16px; height: 16px; }
+
     /* --- CSV PREVIEW --- */
     .csv-preview {
         background: rgba(12, 21, 42, 0.8);
@@ -265,13 +284,13 @@
         transform: rotate(90deg);
     }
 
-    /* --- Danger button (trash) --- */
+    /* --- Subtle danger button --- */
     .danger-btn {
-        background: linear-gradient(180deg, rgba(180, 40, 40, 0.9), rgba(140, 25, 25, 0.9));
-        color: #fff;
-        border: 1px solid rgba(210, 70, 70, 0.85);
+        background: transparent;
+        color: #ff9ea0;
+        border: 1px solid rgba(210, 70, 70, 0.45);
         border-radius: 10px;
-        padding: 0.55rem 0.95rem;
+        padding: 0.5rem 0.9rem;
         display: inline-flex;
         align-items: center;
         gap: 0.45rem;
@@ -279,11 +298,11 @@
         transition: var(--transition);
     }
     .danger-btn:hover {
-        filter: brightness(1.05);
-        box-shadow: 0 0 18px rgba(210, 70, 70, 0.35);
+        background: rgba(210, 70, 70, 0.08);
+        border-color: rgba(210, 70, 70, 0.7);
+        color: #ffbcbc;
         transform: translateY(-1px);
     }
-    .icon-trash { width: 16px; height: 16px; display: inline-block; }
 
     /* --- RESPONSIVE ADJUSTMENTS --- */
     @media (max-width: 768px) {
@@ -547,15 +566,7 @@ Naruto,¿Quién es Naruto?,Ninja,Samurai,Pirata,Caballero,A</pre>
                         <input type="checkbox" id="selectAllMotivos" onclick="toggleSelectAll('motivos')">
                         Seleccionar todo
                     </label>
-                    <button type="submit" class="danger-btn" onclick="return confirm('¿Eliminar los motivos seleccionados? Se eliminarán también sus categorías y sesiones relacionadas.');">
-                        <svg class="icon-trash" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            <path d="M8 6v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                        Eliminar seleccionados
-                    </button>
+                    <button type="submit" class="danger-btn" onclick="return confirm('¿Eliminar los motivos seleccionados? Se eliminarán también sus categorías y sesiones relacionadas.');">Eliminar</button>
                 </div>
                 <ul class="category-list">
                     @forelse(($motivos ?? collect()) as $m)
@@ -584,15 +595,7 @@ Naruto,¿Quién es Naruto?,Ninja,Samurai,Pirata,Caballero,A</pre>
                         <input type="checkbox" id="selectAllCategorias" onclick="toggleSelectAll('categorias')">
                         Seleccionar todo
                     </label>
-                    <button type="submit" class="danger-btn" onclick="return confirm('¿Eliminar las categorías seleccionadas? Las preguntas quedarán sin categoría.');">
-                        <svg class="icon-trash" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            <path d="M8 6v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                        Eliminar seleccionadas
-                    </button>
+                    <button type="submit" class="danger-btn" onclick="return confirm('¿Eliminar las categorías seleccionadas? Las preguntas quedarán sin categoría.');">Eliminar</button>
                 </div>
                 <ul class="category-list">
                     @forelse(($categorias ?? collect()) as $c)
@@ -610,13 +613,13 @@ Naruto,¿Quién es Naruto?,Ninja,Samurai,Pirata,Caballero,A</pre>
             </form>
         </div>
         
-        <div class="category-card">
+        <div class="category-card questions-in-grid">
             <h3 class="category-title">Preguntas existentes ({{ ($questions ?? collect())->count() }})</h3>
             <form action="{{ route('questions.bulkDelete') }}" method="POST">
                 @csrf
                 <div style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; margin-bottom:0.75rem;">
                     <label style="display:flex; align-items:center; gap:0.5rem; color: var(--text-secondary); font-size:0.9rem;">
-                        <input type="checkbox" id="selectAllPreguntas" onclick="toggleSelectAll('preguntas')">
+                        <input type="checkbox" id="selectAllPreguntasGrid" onclick="toggleSelectAll('preguntas')">
                         Seleccionar todo
                     </label>
                     <button type="submit" class="danger-btn" onclick="return confirm('¿Eliminar las preguntas seleccionadas? Se eliminarán también respuestas asociadas.');">
@@ -647,6 +650,84 @@ Naruto,¿Quién es Naruto?,Ninja,Samurai,Pirata,Caballero,A</pre>
             </form>
         </div>
     </div>
+    </div>
+
+    <!-- Preguntas: sección separada y ancha -->
+    <div class="category-card questions-card">
+        <h3 class="category-title">Preguntas</h3>
+        <form action="{{ route('questions.bulkDelete') }}" method="POST">
+            @csrf
+            <div class="questions-toolbar">
+                <label style="display:flex; align-items:center; gap:0.5rem; color: var(--text-secondary); font-size:0.9rem;">
+                    <input type="checkbox" id="selectAllPreguntas" onclick="toggleSelectAll('preguntas')">
+                    Seleccionar todo
+                </label>
+                <div class="pager">
+                    <span class="question-meta">
+                        @if(method_exists($questions, 'firstItem'))
+                            Mostrando {{ $questions->firstItem() }}–{{ $questions->lastItem() }} de {{ $questions->total() }}
+                        @else
+                            Mostrando {{ ($questions ?? collect())->count() }}
+                        @endif
+                    </span>
+                    <a class="pager-btn" href="{{ $questions->previousPageUrl() ?? '#' }}" @if(!$questions->previousPageUrl()) aria-disabled="true" tabindex="-1" onclick="return false;" @endif>
+                        <svg class="icon-arrow" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Anterior
+                    </a>
+                    <a class="pager-btn" href="{{ $questions->nextPageUrl() ?? '#' }}" @if(!$questions->nextPageUrl()) aria-disabled="true" tabindex="-1" onclick="return false;" @endif>
+                        Siguiente
+                        <svg class="icon-arrow" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </a>
+                </div>
+                <button type="submit" class="danger-btn" onclick="return confirm('¿Eliminar las preguntas seleccionadas? Se eliminarán también respuestas asociadas.');">Eliminar</button>
+            </div>
+
+            <ul class="category-list">
+                @forelse($questions as $q)
+                    <li class="question-item">
+                        <div class="question-header">
+                            <span style="display:flex; align-items:center; gap:0.5rem; max-width: 70%;">
+                                <input type="checkbox" class="chk-pregunta" name="ids[]" value="{{ $q->id }}" data-group="preguntas">
+                                <span class="question-text" title="ID {{ $q->id }}">{{ \Illuminate\Support\Str::limit($q->texto, 120) }}</span>
+                            </span>
+                            <span class="question-meta" title="{{ $q->categoria->nombre ?? '—' }} / {{ $q->categoria->motivo->nombre ?? '—' }}">
+                                {{ $q->categoria->motivo->nombre ?? '—' }} • {{ $q->categoria->nombre ?? '—' }}
+                            </span>
+                        </div>
+                        <div class="question-options">
+                            @php
+                                $opts = [
+                                    'A' => $q->opcion_correcta,
+                                    'B' => $q->opcion_1,
+                                    'C' => $q->opcion_2,
+                                    'D' => $q->opcion_3,
+                                ];
+                            @endphp
+                            @foreach($opts as $label => $text)
+                                @if($text !== null && $text !== '')
+                                    <span class="option-chip {{ trim($text) === trim($q->opcion_correcta) ? 'correct' : '' }}">{{ $label }}. {{ $text }}</span>
+                                @endif
+                            @endforeach
+                        </div>
+                    </li>
+                @empty
+                    <li style="opacity: 0.5; font-style: italic;">No hay preguntas creadas</li>
+                @endforelse
+            </ul>
+
+            <div class="pager" style="justify-content:flex-end; margin-top:0.75rem;">
+                <a class="pager-btn" href="{{ $questions->previousPageUrl() ?? '#' }}" @if(!$questions->previousPageUrl()) aria-disabled="true" tabindex="-1" onclick="return false;" @endif>
+                    <svg class="icon-arrow" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Anterior
+                </a>
+                <a class="pager-btn" href="{{ $questions->nextPageUrl() ?? '#' }}" @if(!$questions->nextPageUrl()) aria-disabled="true" tabindex="-1" onclick="return false;" @endif>
+                    Siguiente
+                    <svg class="icon-arrow" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+            </div>
+        </form>
+    </div>
+
 </div>
 
 <script>
