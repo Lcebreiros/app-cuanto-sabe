@@ -30,6 +30,7 @@ Route::middleware('auth')->group(function () {
 
 // Preguntas (público)
 Route::get('/questions', [QuestionController::class, 'index'])->name('questions');
+Route::post('/questions/bulk-delete', [QuestionController::class, 'bulkDelete'])->name('questions.bulkDelete');
 
 // Rutas de administración de usuarios (solo admin)
 Route::middleware(['auth', IsAdmin::class])->group(function () {

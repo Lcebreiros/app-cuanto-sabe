@@ -265,6 +265,26 @@
         transform: rotate(90deg);
     }
 
+    /* --- Danger button (trash) --- */
+    .danger-btn {
+        background: linear-gradient(180deg, rgba(180, 40, 40, 0.9), rgba(140, 25, 25, 0.9));
+        color: #fff;
+        border: 1px solid rgba(210, 70, 70, 0.85);
+        border-radius: 10px;
+        padding: 0.55rem 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+    .danger-btn:hover {
+        filter: brightness(1.05);
+        box-shadow: 0 0 18px rgba(210, 70, 70, 0.35);
+        transform: translateY(-1px);
+    }
+    .icon-trash { width: 16px; height: 16px; display: inline-block; }
+
     /* --- RESPONSIVE ADJUSTMENTS --- */
     @media (max-width: 768px) {
         .questions-container {
@@ -527,9 +547,14 @@ Naruto,¿Quién es Naruto?,Ninja,Samurai,Pirata,Caballero,A</pre>
                         <input type="checkbox" id="selectAllMotivos" onclick="toggleSelectAll('motivos')">
                         Seleccionar todo
                     </label>
-                    <button type="submit" class="action-btn" style="padding:0.5rem 0.9rem; background: rgba(120, 20, 20, 0.6); border-color: rgba(180, 60, 60, 0.9);"
-                        onclick="return confirm('¿Eliminar los motivos seleccionados? Se eliminarán también sus categorías y sesiones relacionadas.');">
-                        🗑️ Eliminar seleccionados
+                    <button type="submit" class="danger-btn" onclick="return confirm('¿Eliminar los motivos seleccionados? Se eliminarán también sus categorías y sesiones relacionadas.');">
+                        <svg class="icon-trash" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M8 6v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Eliminar seleccionados
                     </button>
                 </div>
                 <ul class="category-list">
@@ -559,9 +584,14 @@ Naruto,¿Quién es Naruto?,Ninja,Samurai,Pirata,Caballero,A</pre>
                         <input type="checkbox" id="selectAllCategorias" onclick="toggleSelectAll('categorias')">
                         Seleccionar todo
                     </label>
-                    <button type="submit" class="action-btn" style="padding:0.5rem 0.9rem; background: rgba(120, 20, 20, 0.6); border-color: rgba(180, 60, 60, 0.9);"
-                        onclick="return confirm('¿Eliminar las categorías seleccionadas? Las preguntas quedarán sin categoría.');">
-                        🗑️ Eliminar seleccionadas
+                    <button type="submit" class="danger-btn" onclick="return confirm('¿Eliminar las categorías seleccionadas? Las preguntas quedarán sin categoría.');">
+                        <svg class="icon-trash" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M8 6v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Eliminar seleccionadas
                     </button>
                 </div>
                 <ul class="category-list">
@@ -575,6 +605,43 @@ Naruto,¿Quién es Naruto?,Ninja,Samurai,Pirata,Caballero,A</pre>
                         </li>
                     @empty
                         <li style="opacity: 0.5; font-style: italic;">No hay categorías creadas</li>
+                    @endforelse
+                </ul>
+            </form>
+        </div>
+        
+        <div class="category-card">
+            <h3 class="category-title">Preguntas existentes ({{ ($questions ?? collect())->count() }})</h3>
+            <form action="{{ route('questions.bulkDelete') }}" method="POST">
+                @csrf
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; margin-bottom:0.75rem;">
+                    <label style="display:flex; align-items:center; gap:0.5rem; color: var(--text-secondary); font-size:0.9rem;">
+                        <input type="checkbox" id="selectAllPreguntas" onclick="toggleSelectAll('preguntas')">
+                        Seleccionar todo
+                    </label>
+                    <button type="submit" class="danger-btn" onclick="return confirm('¿Eliminar las preguntas seleccionadas? Se eliminarán también respuestas asociadas.');">
+                        <svg class="icon-trash" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M8 6v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Eliminar seleccionadas
+                    </button>
+                </div>
+                <ul class="category-list">
+                    @forelse(($questions ?? collect()) as $q)
+                        <li class="category-item">
+                            <span style="display:flex; align-items:center; gap:0.5rem; max-width: 70%;">
+                                <input type="checkbox" class="chk-pregunta" name="ids[]" value="{{ $q->id }}" data-group="preguntas">
+                                <span class="category-name" title="ID {{ $q->id }}">{{ \Illuminate\Support\Str::limit($q->texto, 80) }}</span>
+                            </span>
+                            <span class="category-motive" title="{{ $q->categoria->nombre ?? '—' }} / {{ $q->categoria->motivo->nombre ?? '—' }}">
+                                {{ $q->categoria->motivo->nombre ?? '—' }} • {{ $q->categoria->nombre ?? '—' }}
+                            </span>
+                        </li>
+                    @empty
+                        <li style="opacity: 0.5; font-style: italic;">No hay preguntas creadas</li>
                     @endforelse
                 </ul>
             </form>
@@ -615,21 +682,28 @@ Naruto,¿Quién es Naruto?,Ninja,Samurai,Pirata,Caballero,A</pre>
 
     // Select-all y sincronización de checkboxes
     function toggleSelectAll(group) {
-        const master = group === 'motivos' ? document.getElementById('selectAllMotivos') : document.getElementById('selectAllCategorias');
+        let master = null;
+        if (group === 'motivos') master = document.getElementById('selectAllMotivos');
+        else if (group === 'categorias') master = document.getElementById('selectAllCategorias');
+        else if (group === 'preguntas') master = document.getElementById('selectAllPreguntas');
         const checkboxes = document.querySelectorAll(`input[type="checkbox"][data-group="${group}"]`);
         checkboxes.forEach(chk => chk.checked = !!master.checked);
     }
 
     // Mantener estado del "seleccionar todo" cuando se tocan individuales
-    ['motivos','categorias'].forEach(group => {
+    ['motivos','categorias','preguntas'].forEach(group => {
         document.addEventListener('change', (e) => {
             const target = e.target;
             if (target.matches(`input[type="checkbox"][data-group="${group}"]`)) {
                 const all = Array.from(document.querySelectorAll(`input[type="checkbox"][data-group="${group}"]`));
                 const allChecked = all.length > 0 && all.every(chk => chk.checked);
-                const master = group === 'motivos' ? document.getElementById('selectAllMotivos') : document.getElementById('selectAllCategorias');
+                let master = null;
+                if (group === 'motivos') master = document.getElementById('selectAllMotivos');
+                else if (group === 'categorias') master = document.getElementById('selectAllCategorias');
+                else if (group === 'preguntas') master = document.getElementById('selectAllPreguntas');
                 if (master) master.checked = allChecked;
             }
         });
     });
 </script>
+@endsection
